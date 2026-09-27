@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exercice : Present Simple vs Present Continuous</title>
+    <title>Exercice d'anglais</title>
+    
+    <!-- SDK Firebase via CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -13,11 +18,10 @@
             margin: 0 auto;
             padding: 20px;
             background-color: #f4f7f6;
-            padding-bottom: 90px;
+            padding-bottom: 80px;
         }
         h1 { color: #2c3e50; text-align: center; }
         
-        /* Barre de score en haut */
         #stats-bar {
             position: sticky;
             top: 0;
@@ -33,13 +37,8 @@
             font-size: 1.2em;
             z-index: 100;
         }
-        .compteur-valeur { 
-            color: #c0392b; 
-            font-size: 1.5em; 
-            transition: transform 0.2s;
-            display: inline-block;
-        }
-        .score-succes { color: #27ae60; font-size: 1.5em;}
+        .compteur-valeur { color: #c0392b; font-size: 1.5em; display: inline-block; transition: transform 0.2s; }
+        .score-succes { color: #27ae60; font-size: 1.5em; }
 
         .exercice-container {
             background: white;
@@ -54,10 +53,9 @@
             display: flex;
             align-items: center;
             flex-wrap: wrap;
-            min-height: 50px;
         }
-        .numero { font-weight: bold; margin-right: 10px; min-width: 30px; color: #777; font-size: 1.1em;}
-        .texte-phrase { flex-grow: 1; margin-right: 10px; font-size: 1.1em;}
+        .numero { font-weight: bold; margin-right: 10px; min-width: 30px; color: #777; font-size: 1.1em; }
+        .texte-phrase { flex-grow: 1; margin-right: 10px; font-size: 1.1em; }
         
         input[type="text"] {
             padding: 9px 12px;
@@ -66,14 +64,9 @@
             font-size: 1em;
             width: 190px;
             margin: 0 8px;
-            transition: all 0.3s;
             font-family: inherit;
         }
-        input[type="text"]:focus { 
-            outline: none; 
-            border-color: #3498db; 
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.4);
-        }
+        input[type="text"]:focus { outline: none; border-color: #3498db; }
 
         button.check-btn {
             padding: 9px 18px;
@@ -82,20 +75,12 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s;
             font-weight: bold;
-            font-size: 0.95em;
         }
-        button.check-btn:hover { background-color: #2980b9; transform: translateY(-1px); }
-        button.check-btn:active { background-color: #1c6391; transform: translateY(0); }
-        button.check-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; opacity: 0.7; }
+        button.check-btn:hover { background-color: #2980b9; }
+        button.check-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
 
-        .feedback-span {
-            margin-left: 12px;
-            font-weight: bold;
-            min-width: 35px;
-            display: inline-block;
-        }
+        .feedback-span { margin-left: 12px; font-weight: bold; min-width: 35px; display: inline-block; }
         .correct-mark { color: #27ae60; font-size: 1.5em; }
         .error-mark { color: #c0392b; font-size: 1.3em; }
 
@@ -105,80 +90,61 @@
             color: #c0392b;
         }
 
-        /* OVERLAY PLEIN ÉCRAN POUR LES INSULTES */
+        /* OVERLAY INSULTE PLEIN ÉCRAN */
         #punition-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: rgba(231, 76, 60, 0.96);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             z-index: 99999;
-            opacity: 0;
-            pointer-events: none;
+            opacity: 0; pointer-events: none;
             transition: opacity 0.15s ease;
         }
-        #punition-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
+        #punition-overlay.show { opacity: 1; pointer-events: auto; }
         #punition-text {
             font-family: 'Impact', 'Arial Black', sans-serif;
             color: #ffffff;
             font-size: 17vw;
             line-height: 1;
-            text-align: center;
             text-shadow: 8px 8px 0px rgba(0,0,0,0.35);
-            animation: zoomTremblement 0.4s ease-out;
+            animation: tremble 0.4s ease-out;
             user-select: none;
         }
-
         #punition-sub {
-            color: #ffeaa7;
-            font-size: 2.2vw;
-            font-weight: bold;
-            margin-top: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+            color: #ffeaa7; font-size: 2.2vw; font-weight: bold;
+            margin-top: 15px; text-transform: uppercase;
         }
-
-        /* NIVEAU MAXIMUM D'INTENSIFICATION */
         #punition-overlay.rage-mode {
             background-color: #962d22 !important;
-            animation: flashStrobe 0.15s infinite alternate;
+            animation: flash 0.15s infinite alternate;
         }
-        #punition-overlay.rage-mode #punition-text {
-            font-size: 22vw !important;
-            color: #ffeaa7 !important;
-            text-shadow: 12px 12px 0px #000 !important;
-        }
+        #punition-overlay.rage-mode #punition-text { font-size: 22vw !important; color: #ffeaa7 !important; }
 
-        @keyframes zoomTremblement {
+        @keyframes tremble {
             0% { transform: scale(0.2) rotate(-15deg); }
             50% { transform: scale(1.15) rotate(5deg); }
-            70% { transform: scale(0.95) rotate(-3deg); }
             100% { transform: scale(1) rotate(0deg); }
         }
+        @keyframes flash { 0% { background-color: #c0392b; } 100% { background-color: #641e16; } }
 
-        @keyframes flashStrobe {
-            0% { background-color: #c0392b; }
-            100% { background-color: #641e16; }
+        /* SECTION TABLEAU DE BORD PROFESSEUR */
+        #section-prof {
+            display: none;
+            margin-top: 40px;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            border: 2px solid #2c3e50;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-
-        .aide {
-            background: #fff3cd; 
-            padding: 12px 16px; 
-            border-radius: 8px; 
-            margin-bottom: 20px; 
-            border-left: 5px solid #ffc107; 
-            color: #856404;
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #2c3e50; color: white; }
+        tr.erreur-row { background: #fdf2f2; }
+        tr.correct-row { background: #f2faf5; }
+        .badge-err { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
+        .badge-ok { background: #27ae60; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
     </style>
 </head>
 <body>
@@ -187,22 +153,83 @@
     
     <div id="stats-bar">
         <span>Score : <span id="score-succes" class="score-succes">0</span> / 10</span>
+        <span>Élève : <strong id="affichage-eleve" style="color:#2980b9;">...</strong></span>
         <span>Erreurs : <span id="compteur-erreurs" class="compteur-valeur">0</span></span>
-    </div>
-
-    <div class="aide">
-        <strong>Consigne :</strong> Complétez chaque phrase avec la forme correcte (ex: <em>work</em>, <em>is working</em>, <em>don't like</em>). Vous pouvez valider avec le bouton ou la touche <strong>Entrée</strong>.
     </div>
 
     <div class="exercice-container" id="ile-container"></div>
 
-    <!-- Overlay Plein Écran -->
+    <!-- Bouton discret pour le professeur en bas de page -->
+    <div style="text-align: center; margin-top: 35px;">
+        <button onclick="ouvrirEspaceProf()" style="background: none; border: 1px dashed #999; color: #666; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 0.85em;">
+            🔒 Espace Professeur (Suivi en direct)
+        </button>
+    </div>
+
+    <!-- Tableau de bord enseignant caché par défaut -->
+    <div id="section-prof">
+        <h2 style="margin-top:0; color:#2c3e50; display:flex; justify-content:space-between; align-items:center;">
+            <span>📡 Suivi de l'élève en direct</span>
+            <button onclick="document.getElementById('section-prof').style.display='none'" style="cursor:pointer; font-size: 0.8em; padding: 4px 10px;">Fermer</button>
+        </h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Heure</th>
+                    <th>Élève</th>
+                    <th>Question</th>
+                    <th>Réponse</th>
+                    <th>Résultat</th>
+                    <th>Fautes cumulées</th>
+                </tr>
+            </thead>
+            <tbody id="tableau-prof-corps">
+                <tr><td colspan="6" style="text-align:center; color:#888;">En attente de réponses...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Overlay "바보" -->
     <div id="punition-overlay">
         <div id="punition-text">바보</div>
         <div id="punition-sub">Niveau 1 : Ça commence mal...</div>
     </div>
 
     <script>
+        // --- 1. CONFIGURATION FIREBASE (Vos vrais identifiants) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBF72uEilOlNUnRB4_BqREpXCj6NvF4Mac",
+            authDomain: "exoanglais-6dd43.firebaseapp.com",
+            projectId: "exoanglais-6dd43",
+            storageBucket: "exoanglais-6dd43.firebasestorage.app",
+            messagingSenderId: "656075154329",
+            appId: "1:656075154329:web:cfe7ccb130ae55da02a908",
+            measurementId: "G-BWY78NT061"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Demande du prénom de l'élève
+        let nomEleve = localStorage.getItem("nomEleve");
+        if (!nomEleve) {
+            nomEleve = prompt("Entre ton prénom pour commencer :") || "Anonyme";
+            localStorage.setItem("nomEleve", nomEleve);
+        }
+        document.getElementById("affichage-eleve").textContent = nomEleve;
+
+        // Envoi des données en arrière-plan à Firebase
+        function synchroniserFirebase(numQuestion, reponseTapee, estCorrect) {
+            db.collection("activites").add({
+                eleve: nomEleve,
+                question: numQuestion + 1,
+                reponse: reponseTapee,
+                correct: estCorrect,
+                totalErreurs: totalErreurs,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(e => console.log("Firebase non accessible (vérifiez les règles)", e));
+        }
+
+        // --- 2. CONTENU DE L'EXERCICE ---
         const phrasesData = [
             {q: "Listen! The baby ___ (cry).", a: ["is crying"]},
             {q: "We usually ___ (have) lunch at noon.", a: ["have"]},
@@ -216,7 +243,6 @@
             {q: "How often ___ (you / go) to the gym?", a: ["do you go"]}
         ];
 
-        // Messages progressifs selon l'intensité
         const insultesPaliers = [
             { kr: "바보!", fr: "Idiot ! (Niveau 1)" },
             { kr: "멍청이!", fr: "Nigaud ! Concentre-toi !" },
@@ -239,12 +265,11 @@
         let timerOverlay = null;
         let ligneResolue = new Array(phrasesData.length).fill(false);
 
-        // Construction du formulaire
+        // Affichage des phrases
         phrasesData.forEach((p, index) => {
             const num = index + 1;
             const phraseDiv = document.createElement('div');
             phraseDiv.className = 'phrase';
-            
             const parts = p.q.split('___');
             
             phraseDiv.innerHTML = `
@@ -259,10 +284,8 @@
             `;
             container.appendChild(phraseDiv);
 
-            // Permettre la validation par la touche "Entrée"
             setTimeout(() => {
-                const champ = document.getElementById(`input${num}`);
-                champ.addEventListener('keypress', (e) => {
+                document.getElementById(`input${num}`).addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') verifier(index);
                 });
             }, 0);
@@ -277,10 +300,10 @@
             if (ligneResolue[index]) return;
 
             const saisie = input.value.trim().toLowerCase();
-            const bonnesReponses = phrasesData[index].a.map(reponse => reponse.toLowerCase());
+            const bonnesReponses = phrasesData[index].a.map(r => r.toLowerCase());
 
             if (bonnesReponses.includes(saisie)) {
-                // --- CORRECT ---
+                // Correct
                 input.classList.remove('input-error');
                 input.disabled = true;
                 btn.disabled = true;
@@ -290,61 +313,65 @@
                 scoreSuccesSpan.textContent = score;
                 ligneResolue[index] = true;
 
+                synchroniserFirebase(index, saisie, true);
+
                 if (score === phrasesData.length) {
-                    setTimeout(() => alert("🎉 Félicitations ! Tout est validé !"), 300);
+                    setTimeout(() => alert("🎉 Félicitations ! Tout est réussi !"), 300);
                 }
             } else {
-                // --- ERREUR ---
+                // Faux
                 totalErreurs++;
                 compteurErreursSpan.textContent = totalErreurs;
-                
-                // Petit effet d'agrandissement sur le compteur
                 compteurErreursSpan.style.transform = "scale(1.4)";
                 setTimeout(() => compteurErreursSpan.style.transform = "scale(1)", 200);
 
                 input.classList.add('input-error');
                 feedback.innerHTML = '<span class="error-mark">✗</span>';
 
-                // DÉCLENCHEMENT SYSTÉMATIQUE DU PLEIN ÉCRAN
-                declencherInsultePleinEcran();
+                synchroniserFirebase(index, saisie, false);
 
+                declencherInsulte();
                 input.focus();
                 input.select();
             }
         }
 
-        function declencherInsultePleinEcran() {
-            // Choix du message selon le nombre total d'erreurs
+        function declencherInsulte() {
             let indexMessage = Math.min(totalErreurs - 1, insultesPaliers.length - 1);
             if (indexMessage < 0) indexMessage = 0;
 
-            const donnees = insultesPaliers[indexMessage];
-            overlayText.textContent = donnees.kr;
-            overlaySub.textContent = `${donnees.fr} (Erreur n°${totalErreurs})`;
+            const d = insultesPaliers[indexMessage];
+            overlayText.textContent = d.kr;
+            overlaySub.textContent = `${d.fr} (Erreur n°${totalErreurs})`;
 
-            // Si plus de 5 erreurs, passage en mode rage (stroboscope et taille géante)
-            if (totalErreurs >= 5) {
-                overlay.classList.add('rage-mode');
-            } else {
-                overlay.classList.remove('rage-mode');
-            }
+            if (totalErreurs >= 5) overlay.classList.add('rage-mode');
+            else overlay.classList.remove('rage-mode');
 
-            // Réinitialiser l'animation CSS à chaque affichage
             overlayText.style.animation = 'none';
-            overlayText.offsetHeight; // force repaint
-            overlayText.style.animation = 'zoomTremblement 0.4s ease-out';
+            overlayText.offsetHeight;
+            overlayText.style.animation = 'tremble 0.4s ease-out';
 
-            // Afficher
             overlay.classList.add('show');
-
-            // Nettoyer un ancien timer si on clique vite
             if (timerOverlay) clearTimeout(timerOverlay);
-
-            // Faire disparaître après 1,3 seconde (1300 ms)
-            timerOverlay = setTimeout(() => {
-                overlay.classList.remove('show');
-            }, 1300);
+            timerOverlay = setTimeout(() => overlay.classList.remove('show'), 1300);
         }
-    </script>
-</body>
-</html>
+
+        // --- 3. GESTION DE L'ESPACE PROFESSEUR INTÉGRÉ ---
+        let suiviActif = false;
+        function ouvrirEspaceProf() {
+            const mdp = prompt("Code d'accès professeur :");
+            if (mdp === "1234") {
+                const section = document.getElementById("section-prof");
+                section.style.display = "block";
+                section.scrollIntoView({ behavior: 'smooth' });
+
+                if (!suiviActif) {
+                    suiviActif = true;
+                    // Écoute Firestore en temps réel
+                    db.collection("activites").orderBy("timestamp", "desc").limit(30).onSnapshot(snapshot => {
+                        const tbody = document.getElementById("tableau-prof-corps");
+                        tbody.innerHTML = "";
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            const tr = document.createElement("tr");
+                            tr.className = data.correct ? "correct-row" : "erreur-row";
