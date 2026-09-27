@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exercice d'anglais</title>
+    <title>Exercices d'anglais</title>
     
     <style>
         body {
@@ -18,6 +18,7 @@
         }
         h1 { color: #2c3e50; text-align: center; margin-bottom: 15px; }
         
+        /* Barre de score fixe */
         #stats-bar {
             position: sticky;
             top: 0;
@@ -30,7 +31,7 @@
             align-items: center;
             margin-bottom: 20px;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.05em;
             z-index: 100;
             flex-wrap: wrap;
             gap: 10px;
@@ -48,38 +49,96 @@
             width: 140px;
         }
 
-        .exercice-container {
-            background: white;
-            padding: 25px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        /* Onglets Lundi / Mardi */
+        .tabs-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
         }
+        .tab-btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 1.15em;
+            font-weight: bold;
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: white;
+            color: #2b6cb0;
+            box-shadow: 0 -3px 8px rgba(0,0,0,0.06);
+            border-bottom: 3px solid #3182ce;
+        }
+
+        /* Conteneurs d'exercices */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .section-box {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+            margin-bottom: 30px;
+        }
+        .section-title {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25em;
+        }
+        .section-desc {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
         .phrase {
-            margin-bottom: 18px;
-            padding: 12px 10px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 14px;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             font-size: 1.05em;
         }
-        .numero { font-weight: bold; margin-right: 10px; min-width: 30px; color: #777; font-size: 1.1em; }
+        .numero { font-weight: bold; margin-right: 10px; min-width: 32px; color: #718096; }
         .texte-phrase { flex-grow: 1; margin-right: 10px; }
         
         input[type="text"].champ-reponse {
-            padding: 9px 12px;
-            border: 2px solid #aaa;
+            padding: 7px 10px;
+            border: 2px solid #cbd5e0;
             border-radius: 6px;
-            font-size: 1em;
-            width: 180px;
-            margin: 0 8px;
+            font-size: 0.98em;
+            width: 170px;
+            margin: 0 6px;
             font-family: inherit;
         }
-        input[type="text"].champ-reponse:focus { outline: none; border-color: #3498db; }
+        input[type="text"].champ-reponse:focus { outline: none; border-color: #3182ce; }
+
+        select.champ-select {
+            padding: 7px 10px;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 0.98em;
+            margin: 0 6px;
+            background: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        select.champ-select:focus { outline: none; border-color: #3182ce; }
 
         button.check-btn {
-            padding: 9px 16px;
-            background-color: #3498db;
+            padding: 7px 14px;
+            background-color: #3182ce;
             color: white;
             border: none;
             border-radius: 6px;
@@ -87,20 +146,25 @@
             font-weight: bold;
             font-size: 0.9em;
         }
-        button.check-btn:hover { background-color: #2980b9; }
-        button.check-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        button.check-btn:hover { background-color: #2b6cb0; }
+        button.check-btn:disabled { background-color: #cbd5e0; cursor: not-allowed; }
 
-        .feedback-span { margin-left: 12px; font-weight: bold; min-width: 35px; display: inline-block; }
-        .correct-mark { color: #27ae60; font-size: 1.5em; }
-        .error-mark { color: #c0392b; font-size: 1.3em; }
+        .feedback-span { margin-left: 10px; font-weight: bold; min-width: 30px; display: inline-block; }
+        .correct-mark { color: #27ae60; font-size: 1.4em; }
+        .error-mark { color: #c0392b; font-size: 1.2em; }
 
-        input.input-error {
+        .champ-error {
             border-color: #e74c3c !important;
             background-color: #fceae8 !important;
-            color: #c0392b;
+            color: #c0392b !important;
+        }
+        .champ-correct {
+            border-color: #27ae60 !important;
+            background-color: #eafaf1 !important;
+            color: #1e8449 !important;
         }
 
-        /* OVERLAY PLEIN ÉCRAN POUR LES INSULTES */
+        /* OVERLAY INSULTE PLEIN ÉCRAN */
         #punition-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -149,27 +213,85 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #ddd; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #ddd; font-size: 0.92em; }
         th { background: #2c3e50; color: white; }
         tr.erreur-row { background: #fdf2f2; }
         tr.correct-row { background: #f2faf5; }
-        .badge-err { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
-        .badge-ok { background: #27ae60; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
+        .badge-err { background: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
+        .badge-ok { background: #27ae60; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
     </style>
 </head>
 <body>
 
-    <h1>Present Simple vs Present Continuous</h1>
+    <h1>Exercices d'Anglais</h1>
     
     <div id="stats-bar">
-        <span>Score : <span id="score-succes" class="score-succes">0</span> / 10</span>
+        <span>Score total : <span id="score-succes" class="score-succes">0</span> / 120</span>
         <span>Prénom : <input type="text" id="nom-eleve-input" value="Élève" placeholder="Votre prénom"></span>
         <span>Erreurs : <span id="compteur-erreurs" class="compteur-valeur">0</span></span>
     </div>
 
-    <!-- Le conteneur des 10 phrases -->
-    <div class="exercice-container" id="ile-container"></div>
+    <!-- Navigation des onglets -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="changerOnglet('lundi')">📅 À faire pour lundi</button>
+        <button class="tab-btn" onclick="changerOnglet('mardi')">📅 À faire pour mardi</button>
+    </div>
 
+    <!-- CONTENU LUNDI -->
+    <div id="tab-lundi" class="tab-content active">
+        <div class="section-box" id="sec-lundi-present">
+            <h2 class="section-title">📝 1. Present Simple vs Present Continuous (20 phrases)</h2>
+            <div class="section-desc">Complétez avec le verbe conjugué (ex: <em>works</em>, <em>is working</em>, <em>don't like</em>). Validez au bouton ou avec <strong>Entrée</strong>.</div>
+            <div class="conteneur-phrases"></div>
+        </div>
+
+        <div class="section-box" id="sec-lundi-lieux">
+            <h2 class="section-title">📍 2. Prépositions de Lieu : IN, ON, AT (10 phrases)</h2>
+            <div class="section-desc">Choisissez la bonne préposition dans le menu déroulant.</div>
+            <div class="conteneur-phrases"></div>
+        </div>
+
+        <div class="section-box" id="sec-lundi-temps">
+            <h2 class="section-title">⏰ 3. Prépositions de Temps : IN, ON, AT (10 phrases)</h2>
+            <div class="section-desc">Choisissez la bonne préposition de temps dans le menu déroulant.</div>
+            <div class="conteneur-phrases"></div>
+        </div>
+
+        <div class="section-box" id="sec-lundi-mixte">
+            <h2 class="section-title">🔀 4. Prépositions de Lieux & Temps Mélangées (20 phrases)</h2>
+            <div class="section-desc">Faites attention au contexte (lieu ou moment) pour choisir entre IN, ON et AT.</div>
+            <div class="conteneur-phrases"></div>
+        </div>
+    </div>
+
+    <!-- CONTENU MARDI -->
+    <div id="tab-mardi" class="tab-content">
+        <div class="section-box" id="sec-mardi-present">
+            <h2 class="section-title">📝 1. Present Simple vs Present Continuous (20 phrases)</h2>
+            <div class="section-desc">Complétez avec le verbe conjugué (ex: <em>works</em>, <em>is working</em>, <em>don't like</em>). Validez au bouton ou avec <strong>Entrée</strong>.</div>
+            <div class="conteneur-phrases"></div>
+        </div>
+
+        <div class="section-box" id="sec-mardi-lieux">
+            <h2 class="section-title">📍 2. Prépositions de Lieu : IN, ON, AT (10 phrases)</h2>
+            <div class="section-desc">Choisissez la bonne préposition dans le menu déroulant.</div>
+            <div class="conteneur-phrases"></div>
+        </div>
+
+        <div class="section-box" id="sec-mardi-temps">
+            <h2 class="section-title">⏰ 3. Prépositions de Temps : IN, ON, AT (10 phrases)</h2>
+            <div class="section-desc">Choisissez la bonne préposition de temps dans le menu déroulant.</div>
+            <div class="conteneur-phrases"></div>
+        </div>
+
+        <div class="section-box" id="sec-mardi-mixte">
+            <h2 class="section-title">🔀 4. Prépositions de Lieux & Temps Mélangées (20 phrases)</h2>
+            <div class="section-desc">Faites attention au contexte (lieu ou moment) pour choisir entre IN, ON et AT.</div>
+            <div class="conteneur-phrases"></div>
+        </div>
+    </div>
+
+    <!-- Bouton Espace Professeur -->
     <div style="text-align: center; margin-top: 35px;">
         <button onclick="ouvrirEspaceProf()" style="background: none; border: 1px dashed #999; color: #666; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 0.85em;">
             🔒 Espace Professeur (Suivi en direct)
@@ -187,6 +309,8 @@
                 <tr>
                     <th>Heure</th>
                     <th>Élève</th>
+                    <th>Devoir</th>
+                    <th>Section</th>
                     <th>Question</th>
                     <th>Réponse</th>
                     <th>Résultat</th>
@@ -194,7 +318,7 @@
                 </tr>
             </thead>
             <tbody id="tableau-prof-corps">
-                <tr><td colspan="6" style="text-align:center; color:#888;">En attente de réponses...</td></tr>
+                <tr><td colspan="8" style="text-align:center; color:#888;">En attente de réponses...</td></tr>
             </tbody>
         </table>
     </div>
@@ -204,20 +328,154 @@
         <div id="punition-sub">Niveau 1 : Ça commence mal...</div>
     </div>
 
-    <!-- 1. GÉNÉRATION IMMÉDIATE DE L'EXERCICE (Ne plante jamais) -->
+    <!-- SDK Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
     <script>
-        const phrasesData = [
-            {q: "Listen! The baby ___ (cry).", a: ["is crying"]},
-            {q: "We usually ___ (have) lunch at noon.", a: ["have"]},
-            {q: "Look at Tom! He ___ (ride) a horse.", a: ["is riding"]},
-            {q: "Water ___ (boil) at 100 degrees Celsius.", a: ["boils"]},
-            {q: "I ___ (not / like) horror movies.", a: ["don't like", "do not like"]},
-            {q: "They ___ (study) in the library at the moment.", a: ["are studying"]},
-            {q: "The sun ___ (shine) brightly today.", a: ["is shining"]},
-            {q: "My father ___ (work) in a factory.", a: ["works"]},
-            {q: "Be quiet! I ___ (try) to sleep.", a: ["am trying"]},
-            {q: "How often ___ (you / go) to the gym?", a: ["do you go"]}
-        ];
+        // --- DONNÉES DES 120 PHRASES ---
+        const devoirs = {
+            lundi: {
+                present: [
+                    {q: "Look! The cat ___ (climb) the tree.", a: ["is climbing"]},
+                    {q: "I always ___ (drink) coffee in the morning.", a: ["drink"]},
+                    {q: "They ___ (not / play) video games right now.", a: ["aren't playing", "are not playing"]},
+                    {q: "My brother ___ (live) in Madrid.", a: ["lives"]},
+                    {q: "Listen! The teacher ___ (speak).", a: ["is speaking"]},
+                    {q: "She usually ___ (walk) to school.", a: ["walks"]},
+                    {q: "We ___ (watch) a great movie at the moment.", a: ["are watching"]},
+                    {q: "Water ___ (freeze) at 0 degrees Celsius.", a: ["freezes"]},
+                    {q: "Why ___ (you / cry)?", a: ["are you crying"]},
+                    {q: "He ___ (not / eat) meat; he is a vegetarian.", a: ["doesn't eat", "does not eat"]},
+                    {q: "Hurry up! The bus ___ (come).", a: ["is coming"]},
+                    {q: "Doctors ___ (help) sick people.", a: ["help"]},
+                    {q: "I ___ (read) an interesting book these days.", a: ["am reading"]},
+                    {q: "What time ___ (the bank / open)?", a: ["does the bank open"]},
+                    {q: "Look at them! They ___ (swim) in the lake.", a: ["are swimming"]},
+                    {q: "My father never ___ (watch) TV in the afternoon.", a: ["watches"]},
+                    {q: "Shh! The baby ___ (sleep) in her room.", a: ["is sleeping"]},
+                    {q: "___ (you / understand) this grammar rule?", a: ["do you understand"]},
+                    {q: "Today, Sarah ___ (wear) a yellow dress.", a: ["is wearing"]},
+                    {q: "Birds ___ (fly) south in autumn.", a: ["fly"]}
+                ],
+                lieux: [
+                    {q: "The keys are ___ the table.", a: ["on"]},
+                    {q: "He is waiting ___ the bus stop.", a: ["at"]},
+                    {q: "We live ___ France.", a: ["in"]},
+                    {q: "The poster is ___ the wall.", a: ["on"]},
+                    {q: "She is ___ her bedroom.", a: ["in"]},
+                    {q: "Meet me ___ the station.", a: ["at"]},
+                    {q: "There is some milk ___ the fridge.", a: ["in"]},
+                    {q: "The cat is sitting ___ the roof.", a: ["on"]},
+                    {q: "They are studying ___ school.", a: ["at"]},
+                    {q: "I left my shoes ___ the floor.", a: ["on"]}
+                ],
+                temps: [
+                    {q: "The train leaves ___ 6:00 PM.", a: ["at"]},
+                    {q: "My birthday is ___ July.", a: ["in"]},
+                    {q: "We have English class ___ Monday.", a: ["on"]},
+                    {q: "I wake up early ___ the morning.", a: ["in"]},
+                    {q: "They meet ___ noon every day.", a: ["at"]},
+                    {q: "He was born ___ 2010.", a: ["in"]},
+                    {q: "The party is ___ Saturday night.", a: ["on"]},
+                    {q: "It gets very cold ___ winter.", a: ["in"]},
+                    {q: "The stars shine ___ night.", a: ["at"]},
+                    {q: "The shop opens ___ October 15th.", a: ["on"]}
+                ],
+                mixte: [
+                    {q: "I will see you ___ the bus stop.", a: ["at"]},
+                    {q: "She was born ___ May 4th.", a: ["on"]},
+                    {q: "We swim in the pool ___ summer.", a: ["in"]},
+                    {q: "There is an apple ___ the plate.", a: ["on"]},
+                    {q: "The concert starts ___ 8 o'clock.", a: ["at"]},
+                    {q: "They live ___ a big city.", a: ["in"]},
+                    {q: "Let's meet ___ Tuesday morning.", a: ["on"]},
+                    {q: "I sleep very well ___ night.", a: ["at"]},
+                    {q: "Put the book ___ the shelf.", a: ["on"]},
+                    {q: "He is working ___ his office.", a: ["in"]},
+                    {q: "The bell rings ___ lunchtime.", a: ["at"]},
+                    {q: "We have a family meal ___ Christmas Day.", a: ["on"]},
+                    {q: "She sits ___ the grass.", a: ["on"]},
+                    {q: "The film ends ___ midnight.", a: ["at"]},
+                    {q: "Paris is beautiful ___ spring.", a: ["in"]},
+                    {q: "The mirror is ___ the bathroom.", a: ["in"]},
+                    {q: "I will call you ___ 4 PM.", a: ["at"]},
+                    {q: "The big painting is ___ the wall.", a: ["on"]},
+                    {q: "He arrived ___ Monday.", a: ["on"]},
+                    {q: "We stayed ___ home yesterday.", a: ["at"]}
+                ]
+            },
+            mardi: {
+                present: [
+                    {q: "Be quiet! Dad ___ (talk) on the phone.", a: ["is talking"]},
+                    {q: "Dogs ___ (bark) when they see strangers.", a: ["bark"]},
+                    {q: "I ___ (not / study) right now; I am eating.", a: ["am not studying", "'m not studying"]},
+                    {q: "She always ___ (arrive) on time.", a: ["arrives"]},
+                    {q: "Look! It ___ (snow) outside!", a: ["is snowing"]},
+                    {q: "My parents ___ (work) from Monday to Friday.", a: ["work"]},
+                    {q: "We ___ (bake) a chocolate cake at the moment.", a: ["are baking"]},
+                    {q: "The sun ___ (rise) in the east.", a: ["rises"]},
+                    {q: "Where ___ (you / go) right now?", a: ["are you going"]},
+                    {q: "He ___ (not / like) cold weather.", a: ["doesn't like", "does not like"]},
+                    {q: "Listen! The birds ___ (sing) in the garden.", a: ["are singing"]},
+                    {q: "Teachers ___ (teach) students at school.", a: ["teach"]},
+                    {q: "I ___ (learn) Spanish this semester.", a: ["am learning"]},
+                    {q: "What time ___ (the movie / start)?", a: ["does the movie start"]},
+                    {q: "Look at Emma! She ___ (run) very fast.", a: ["is running"]},
+                    {q: "My grandmother ___ (bake) cookies every weekend.", a: ["bakes"]},
+                    {q: "Shh! They ___ (take) an exam right now.", a: ["are taking"]},
+                    {q: "___ (you / know) the answer to this question?", a: ["do you know"]},
+                    {q: "Today, Mark ___ (drive) his father's car.", a: ["is driving"]},
+                    {q: "Rivers ___ (flow) into the sea.", a: ["flow"]}
+                ],
+                lieux: [
+                    {q: "The notebook is ___ the desk.", a: ["on"]},
+                    {q: "We are waiting ___ the airport.", a: ["at"]},
+                    {q: "They live ___ Canada.", a: ["in"]},
+                    {q: "The clock is ___ the wall.", a: ["on"]},
+                    {q: "My sister is ___ the kitchen.", a: ["in"]},
+                    {q: "Let's meet ___ the cinema entrance.", a: ["at"]},
+                    {q: "Put the vegetables ___ the basket.", a: ["in"]},
+                    {q: "The bird is sitting ___ the fence.", a: ["on"]},
+                    {q: "He works ___ a hospital.", a: ["in"]},
+                    {q: "Don't leave your jacket ___ the bed.", a: ["on"]}
+                ],
+                temps: [
+                    {q: "The plane takes off ___ 9:30 AM.", a: ["at"]},
+                    {q: "Halloween is celebrated ___ October.", a: ["in"]},
+                    {q: "We play basketball ___ Wednesday.", a: ["on"]},
+                    {q: "I study best ___ the evening.", a: ["in"]},
+                    {q: "The restaurant closes ___ midnight.", a: ["at"]},
+                    {q: "Man walked on the Moon ___ 1969.", a: ["in"]},
+                    {q: "The match takes place ___ Friday afternoon.", a: ["on"]},
+                    {q: "Flowers bloom ___ spring.", a: ["in"]},
+                    {q: "I like to read ___ night.", a: ["at"]},
+                    {q: "School begins ___ September 2nd.", a: ["on"]}
+                ],
+                mixte: [
+                    {q: "We arrived ___ the hotel late.", a: ["at"]},
+                    {q: "He will call me ___ Friday.", a: ["on"]},
+                    {q: "They were born ___ 2012.", a: ["in"]},
+                    {q: "There is a fly ___ the window.", a: ["on"]},
+                    {q: "The meeting starts ___ 2 o'clock.", a: ["at"]},
+                    {q: "She lives ___ London.", a: ["in"]},
+                    {q: "What are you doing ___ New Year's Day?", a: ["on"]},
+                    {q: "Owls hunt for food ___ night.", a: ["at"]},
+                    {q: "The coffee cup is ___ the table.", a: ["on"]},
+                    {q: "The children are playing ___ the garden.", a: ["in"]},
+                    {q: "We eat breakfast ___ 7:30.", a: ["at"]},
+                    {q: "The party is ___ July 4th.", a: ["on"]},
+                    {q: "Don't step ___ the wet grass!", a: ["on"]},
+                    {q: "It is very quiet ___ midnight.", a: ["at"]},
+                    {q: "It rains a lot ___ November.", a: ["in"]},
+                    {q: "The soup is cooking ___ the pot.", a: ["in"]},
+                    {q: "Meet me ___ the front door.", a: ["at"]},
+                    {q: "The world map is ___ the wall.", a: ["on"]},
+                    {q: "I have piano class ___ Thursday.", a: ["on"]},
+                    {q: "Dad is ___ work right now.", a: ["at"]}
+                ]
+            }
+        };
 
         const insultesPaliers = [
             { kr: "바보!", fr: "Idiot ! (Niveau 1)" },
@@ -229,99 +487,150 @@
             { kr: "죽을래?!", fr: "ARRÊTE LE MASSACRE !" }
         ];
 
-        const container = document.getElementById('ile-container');
-        const compteurErreursSpan = document.getElementById('compteur-erreurs');
-        const scoreSuccesSpan = document.getElementById('score-succes');
-        const overlay = document.getElementById('punition-overlay');
-        const overlayText = document.getElementById('punition-text');
-        const overlaySub = document.getElementById('punition-sub');
-
         let totalErreurs = 0;
-        let score = 0;
+        let scoreTotal = 0;
         let timerOverlay = null;
-        let ligneResolue = new Array(phrasesData.length).fill(false);
 
-        // Affichage des phrases garanti
-        phrasesData.forEach((p, index) => {
-            const num = index + 1;
-            const phraseDiv = document.createElement('div');
-            phraseDiv.className = 'phrase';
-            const parts = p.q.split('___');
-            
-            phraseDiv.innerHTML = `
-                <span class="numero">${num}.</span>
-                <span class="texte-phrase">
-                    ${parts[0]}
-                    <input type="text" class="champ-reponse" id="input${num}" placeholder="verbe..." autocomplete="off">
-                    <button class="check-btn" id="btn${num}" onclick="verifier(${index})">Vérifier</button>
-                    <span class="feedback-span" id="feedback${num}"></span>
-                    ${parts[1]}
-                </span>
-            `;
-            container.appendChild(phraseDiv);
+        // Génération de l'interface
+        function initialiserExercices() {
+            ['lundi', 'mardi'].forEach(jour => {
+                const donneesJour = devoirs[jour];
+                ['present', 'lieux', 'temps', 'mixte'].forEach(section => {
+                    const conteneur = document.querySelector(`#sec-${jour}-${section} .conteneur-phrases`);
+                    const listePhrases = donneesJour[section];
+                    
+                    listePhrases.forEach((p, idx) => {
+                        const num = idx + 1;
+                        const idUnique = `${jour}-${section}-${num}`;
+                        const div = document.createElement('div');
+                        div.className = 'phrase';
 
-            setTimeout(() => {
-                const inputEl = document.getElementById(`input${num}`);
-                if (inputEl) {
-                    inputEl.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') verifier(index);
+                        const parts = p.q.split('___');
+
+                        if (section === 'present') {
+                            // Champ texte + bouton vérifier
+                            div.innerHTML = `
+                                <span class="numero">${num}.</span>
+                                <span class="texte-phrase">
+                                    ${parts[0]}
+                                    <input type="text" class="champ-reponse" id="input-${idUnique}" placeholder="verbe..." autocomplete="off">
+                                    <button class="check-btn" id="btn-${idUnique}" onclick="verifierTexte('${jour}', '${section}', ${idx})">Vérifier</button>
+                                    <span class="feedback-span" id="fb-${idUnique}"></span>
+                                    ${parts[1]}
+                                </span>
+                            `;
+                            conteneur.appendChild(div);
+
+                            setTimeout(() => {
+                                const inputEl = document.getElementById(`input-${idUnique}`);
+                                if (inputEl) {
+                                    inputEl.addEventListener('keypress', (e) => {
+                                        if (e.key === 'Enter') verifierTexte(jour, section, idx);
+                                    });
+                                }
+                            }, 0);
+                        } else {
+                            // Menu déroulant instantané
+                            div.innerHTML = `
+                                <span class="numero">${num}.</span>
+                                <span class="texte-phrase">
+                                    ${parts[0]}
+                                    <select class="champ-select" id="select-${idUnique}" onchange="verifierSelect('${jour}', '${section}', ${idx})">
+                                        <option value="">---</option>
+                                        <option value="in">in</option>
+                                        <option value="on">on</option>
+                                        <option value="at">at</option>
+                                    </select>
+                                    <span class="feedback-span" id="fb-${idUnique}"></span>
+                                    ${parts[1]}
+                                </span>
+                            `;
+                            conteneur.appendChild(div);
+                        }
                     });
-                }
-            }, 0);
-        });
-
-        // Sauvegarde du prénom dans le navigateur
-        try {
-            const nomSauvegarde = localStorage.getItem("nomEleve");
-            if (nomSauvegarde) document.getElementById("nom-eleve-input").value = nomSauvegarde;
-            document.getElementById("nom-eleve-input").addEventListener("input", (e) => {
-                localStorage.setItem("nomEleve", e.target.value.trim());
+                });
             });
-        } catch(e) {}
+        }
 
-        function verifier(index) {
-            const num = index + 1;
-            const input = document.getElementById(`input${num}`);
-            const btn = document.getElementById(`btn${num}`);
-            const feedback = document.getElementById(`feedback${num}`);
-            
-            if (ligneResolue[index]) return;
+        // Vérification Champ Texte (Présent Simple vs Continu)
+        function verifierTexte(jour, section, idx) {
+            const idUnique = `${jour}-${section}-${idx + 1}`;
+            const input = document.getElementById(`input-${idUnique}`);
+            const btn = document.getElementById(`btn-${idUnique}`);
+            const fb = document.getElementById(`fb-${idUnique}`);
+            const p = devoirs[jour][section][idx];
+
+            if (input.disabled) return;
 
             const saisie = input.value.trim().toLowerCase();
-            const bonnesReponses = phrasesData[index].a.map(r => r.toLowerCase());
+            const bonnesReponses = p.a.map(r => r.toLowerCase());
 
             if (bonnesReponses.includes(saisie)) {
                 // Correct
-                input.classList.remove('input-error');
+                input.classList.remove('champ-error');
+                input.classList.add('champ-correct');
                 input.disabled = true;
                 btn.disabled = true;
-                feedback.innerHTML = '<span class="correct-mark">✓</span>';
+                fb.innerHTML = '<span class="correct-mark">✓</span>';
                 
-                score++;
-                scoreSuccesSpan.textContent = score;
-                ligneResolue[index] = true;
-
-                synchroniserFirebase(index, saisie, true);
-
-                if (score === phrasesData.length) {
-                    setTimeout(() => alert("🎉 Félicitations ! Tout est validé !"), 200);
-                }
+                scoreTotal++;
+                document.getElementById('score-succes').textContent = scoreTotal;
+                synchroniserFirebase(jour, section, idx + 1, saisie, true);
             } else {
                 // Faux
                 totalErreurs++;
-                compteurErreursSpan.textContent = totalErreurs;
-                compteurErreursSpan.style.transform = "scale(1.4)";
-                setTimeout(() => compteurErreursSpan.style.transform = "scale(1)", 200);
+                majCompteurErreurs();
+                input.classList.add('champ-error');
+                fb.innerHTML = '<span class="error-mark">✗</span>';
 
-                input.classList.add('input-error');
-                feedback.innerHTML = '<span class="error-mark">✗</span>';
-
-                synchroniserFirebase(index, saisie, false);
-
+                synchroniserFirebase(jour, section, idx + 1, saisie, false);
                 declencherInsulte();
                 input.focus();
                 input.select();
             }
+        }
+
+        // Vérification Menu Déroulant (In, On, At)
+        function verifierSelect(jour, section, idx) {
+            const idUnique = `${jour}-${section}-${idx + 1}`;
+            const select = document.getElementById(`select-${idUnique}`);
+            const fb = document.getElementById(`fb-${idUnique}`);
+            const p = devoirs[jour][section][idx];
+
+            const choix = select.value.toLowerCase();
+            if (!choix) {
+                fb.innerHTML = "";
+                select.classList.remove('champ-error', 'champ-correct');
+                return;
+            }
+
+            if (p.a.includes(choix)) {
+                // Correct
+                select.classList.remove('champ-error');
+                select.classList.add('champ-correct');
+                select.disabled = true;
+                fb.innerHTML = '<span class="correct-mark">✓</span>';
+
+                scoreTotal++;
+                document.getElementById('score-succes').textContent = scoreTotal;
+                synchroniserFirebase(jour, section, idx + 1, choix, true);
+            } else {
+                // Faux
+                totalErreurs++;
+                majCompteurErreurs();
+                select.classList.add('champ-error');
+                fb.innerHTML = '<span class="error-mark">✗</span>';
+
+                synchroniserFirebase(jour, section, idx + 1, choix, false);
+                declencherInsulte();
+            }
+        }
+
+        function majCompteurErreurs() {
+            const span = document.getElementById('compteur-erreurs');
+            span.textContent = totalErreurs;
+            span.style.transform = "scale(1.4)";
+            setTimeout(() => span.style.transform = "scale(1)", 200);
         }
 
         function declencherInsulte() {
@@ -329,6 +638,10 @@
             if (indexMessage < 0) indexMessage = 0;
 
             const d = insultesPaliers[indexMessage];
+            const overlay = document.getElementById('punition-overlay');
+            const overlayText = document.getElementById('punition-text');
+            const overlaySub = document.getElementById('punition-sub');
+
             overlayText.textContent = d.kr;
             overlaySub.textContent = `${d.fr} (Erreur n°${totalErreurs})`;
 
@@ -343,13 +656,30 @@
             if (timerOverlay) clearTimeout(timerOverlay);
             timerOverlay = setTimeout(() => overlay.classList.remove('show'), 1300);
         }
-    </script>
 
-    <!-- 2. CHARGEMENT ET SYNCHRONISATION FIREBASE EN TÂCHE DE FOND -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+        function changerOnglet(jour) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-    <script>
+            if (jour === 'lundi') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-lundi').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-mardi').classList.add('active');
+            }
+        }
+
+        // --- GESTION DU PRÉNOM ---
+        try {
+            const nomSauv = localStorage.getItem("nomEleve");
+            if (nomSauv) document.getElementById("nom-eleve-input").value = nomSauv;
+            document.getElementById("nom-eleve-input").addEventListener("input", (e) => {
+                localStorage.setItem("nomEleve", e.target.value.trim());
+            });
+        } catch(e) {}
+
+        // --- FIREBASE ET MONITORING ---
         let db = null;
         try {
             if (typeof firebase !== 'undefined') {
@@ -366,21 +696,23 @@
                 db = firebase.firestore();
             }
         } catch(e) {
-            console.warn("Firebase n'a pas pu s'initialiser :", e);
+            console.warn("Firebase non initialisé :", e);
         }
 
-        function synchroniserFirebase(numQuestion, reponseTapee, estCorrect) {
+        function synchroniserFirebase(jour, section, numQ, reponseTapee, estCorrect) {
             if (!db) return;
             const nom = document.getElementById("nom-eleve-input").value.trim() || "Anonyme";
             try {
                 db.collection("activites").add({
                     eleve: nom,
-                    question: numQuestion + 1,
+                    devoir: jour.toUpperCase(),
+                    section: section.toUpperCase(),
+                    question: numQ,
                     reponse: reponseTapee,
                     correct: estCorrect,
                     totalErreurs: totalErreurs,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch(err => console.log("Erreur envoi Firebase:", err));
+                }).catch(err => console.log("Erreur Firestore :", err));
             } catch(e) {}
         }
 
@@ -392,7 +724,7 @@
                 section.scrollIntoView({ behavior: 'smooth' });
 
                 if (db) {
-                    db.collection("activites").orderBy("timestamp", "desc").limit(30).onSnapshot(snapshot => {
+                    db.collection("activites").orderBy("timestamp", "desc").limit(50).onSnapshot(snapshot => {
                         const tbody = document.getElementById("tableau-prof-corps");
                         tbody.innerHTML = "";
                         snapshot.forEach(doc => {
@@ -404,7 +736,9 @@
                             tr.innerHTML = `
                                 <td>${heure}</td>
                                 <td><strong>${data.eleve}</strong></td>
-                                <td>Question n°${data.question}</td>
+                                <td><span style="font-weight:bold; color:#2b6cb0;">${data.devoir || "-"}</span></td>
+                                <td>${data.section || "-"}</td>
+                                <td>n°${data.question}</td>
                                 <td><code>${data.reponse || "<em>vide</em>"}</code></td>
                                 <td>${data.correct ? '<span class="badge-ok">CORRECT</span>' : '<span class="badge-err">FAUTE (바보)</span>'}</td>
                                 <td>${data.totalErreurs}</td>
@@ -412,13 +746,16 @@
                             tbody.appendChild(tr);
                         });
                     }, err => {
-                        document.getElementById("tableau-prof-corps").innerHTML = `<tr><td colspan="6" style="color:red; text-align:center;">Vérifiez les Règles Firestore (mode test requis).</td></tr>`;
+                        document.getElementById("tableau-prof-corps").innerHTML = `<tr><td colspan="8" style="color:red; text-align:center;">Vérifiez les Règles Firestore.</td></tr>`;
                     });
                 }
             } else if (mdp !== null) {
                 alert("Code incorrect.");
             }
         }
+
+        // Initialisation immédiate
+        initialiserExercices();
     </script>
 </body>
 </html>
