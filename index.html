@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exercice d'anglais</title>
     
-    <!-- SDK Firebase via CDN -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,15 +14,15 @@
             margin: 0 auto;
             padding: 20px;
             background-color: #f4f7f6;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
         }
-        h1 { color: #2c3e50; text-align: center; }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 15px; }
         
         #stats-bar {
             position: sticky;
             top: 0;
-            background-color: rgba(255, 255, 255, 0.96);
-            padding: 15px 30px;
+            background-color: rgba(255, 255, 255, 0.98);
+            padding: 12px 25px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             display: flex;
@@ -34,48 +30,62 @@
             align-items: center;
             margin-bottom: 20px;
             font-weight: bold;
-            font-size: 1.2em;
+            font-size: 1.1em;
             z-index: 100;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .compteur-valeur { color: #c0392b; font-size: 1.5em; display: inline-block; transition: transform 0.2s; }
-        .score-succes { color: #27ae60; font-size: 1.5em; }
+        .compteur-valeur { color: #c0392b; font-size: 1.4em; display: inline-block; transition: transform 0.2s; }
+        .score-succes { color: #27ae60; font-size: 1.4em; }
+
+        #nom-eleve-input {
+            padding: 6px 10px;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.95em;
+            color: #2c3e50;
+            width: 140px;
+        }
 
         .exercice-container {
             background: white;
-            padding: 30px;
+            padding: 25px 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
         }
         .phrase {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             padding: 12px 10px;
             border-bottom: 1px solid #eee;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
+            font-size: 1.05em;
         }
         .numero { font-weight: bold; margin-right: 10px; min-width: 30px; color: #777; font-size: 1.1em; }
-        .texte-phrase { flex-grow: 1; margin-right: 10px; font-size: 1.1em; }
+        .texte-phrase { flex-grow: 1; margin-right: 10px; }
         
-        input[type="text"] {
+        input[type="text"].champ-reponse {
             padding: 9px 12px;
             border: 2px solid #aaa;
             border-radius: 6px;
             font-size: 1em;
-            width: 190px;
+            width: 180px;
             margin: 0 8px;
             font-family: inherit;
         }
-        input[type="text"]:focus { outline: none; border-color: #3498db; }
+        input[type="text"].champ-reponse:focus { outline: none; border-color: #3498db; }
 
         button.check-btn {
-            padding: 9px 18px;
+            padding: 9px 16px;
             background-color: #3498db;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 0.9em;
         }
         button.check-btn:hover { background-color: #2980b9; }
         button.check-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; }
@@ -90,7 +100,7 @@
             color: #c0392b;
         }
 
-        /* OVERLAY INSULTE PLEIN ÉCRAN */
+        /* OVERLAY PLEIN ÉCRAN POUR LES INSULTES */
         #punition-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -128,10 +138,10 @@
         }
         @keyframes flash { 0% { background-color: #c0392b; } 100% { background-color: #641e16; } }
 
-        /* SECTION TABLEAU DE BORD PROFESSEUR */
+        /* ESPACE PROFESSEUR */
         #section-prof {
             display: none;
-            margin-top: 40px;
+            margin-top: 35px;
             background: white;
             padding: 25px;
             border-radius: 8px;
@@ -153,20 +163,20 @@
     
     <div id="stats-bar">
         <span>Score : <span id="score-succes" class="score-succes">0</span> / 10</span>
-        <span>Élève : <strong id="affichage-eleve" style="color:#2980b9;">...</strong></span>
+        <span>Prénom : <input type="text" id="nom-eleve-input" value="Élève" placeholder="Votre prénom"></span>
         <span>Erreurs : <span id="compteur-erreurs" class="compteur-valeur">0</span></span>
     </div>
 
+    <!-- Le conteneur des 10 phrases -->
     <div class="exercice-container" id="ile-container"></div>
 
-    <!-- Bouton discret pour le professeur en bas de page -->
     <div style="text-align: center; margin-top: 35px;">
         <button onclick="ouvrirEspaceProf()" style="background: none; border: 1px dashed #999; color: #666; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 0.85em;">
             🔒 Espace Professeur (Suivi en direct)
         </button>
     </div>
 
-    <!-- Tableau de bord enseignant caché par défaut -->
+    <!-- Tableau de bord enseignant -->
     <div id="section-prof">
         <h2 style="margin-top:0; color:#2c3e50; display:flex; justify-content:space-between; align-items:center;">
             <span>📡 Suivi de l'élève en direct</span>
@@ -180,7 +190,7 @@
                     <th>Question</th>
                     <th>Réponse</th>
                     <th>Résultat</th>
-                    <th>Fautes cumulées</th>
+                    <th>Fautes</th>
                 </tr>
             </thead>
             <tbody id="tableau-prof-corps">
@@ -189,47 +199,13 @@
         </table>
     </div>
 
-    <!-- Overlay "바보" -->
     <div id="punition-overlay">
         <div id="punition-text">바보</div>
         <div id="punition-sub">Niveau 1 : Ça commence mal...</div>
     </div>
 
+    <!-- 1. GÉNÉRATION IMMÉDIATE DE L'EXERCICE (Ne plante jamais) -->
     <script>
-        // --- 1. CONFIGURATION FIREBASE (Vos vrais identifiants) ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyBF72uEilOlNUnRB4_BqREpXCj6NvF4Mac",
-            authDomain: "exoanglais-6dd43.firebaseapp.com",
-            projectId: "exoanglais-6dd43",
-            storageBucket: "exoanglais-6dd43.firebasestorage.app",
-            messagingSenderId: "656075154329",
-            appId: "1:656075154329:web:cfe7ccb130ae55da02a908",
-            measurementId: "G-BWY78NT061"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // Demande du prénom de l'élève
-        let nomEleve = localStorage.getItem("nomEleve");
-        if (!nomEleve) {
-            nomEleve = prompt("Entre ton prénom pour commencer :") || "Anonyme";
-            localStorage.setItem("nomEleve", nomEleve);
-        }
-        document.getElementById("affichage-eleve").textContent = nomEleve;
-
-        // Envoi des données en arrière-plan à Firebase
-        function synchroniserFirebase(numQuestion, reponseTapee, estCorrect) {
-            db.collection("activites").add({
-                eleve: nomEleve,
-                question: numQuestion + 1,
-                reponse: reponseTapee,
-                correct: estCorrect,
-                totalErreurs: totalErreurs,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(e => console.log("Firebase non accessible (vérifiez les règles)", e));
-        }
-
-        // --- 2. CONTENU DE L'EXERCICE ---
         const phrasesData = [
             {q: "Listen! The baby ___ (cry).", a: ["is crying"]},
             {q: "We usually ___ (have) lunch at noon.", a: ["have"]},
@@ -265,7 +241,7 @@
         let timerOverlay = null;
         let ligneResolue = new Array(phrasesData.length).fill(false);
 
-        // Affichage des phrases
+        // Affichage des phrases garanti
         phrasesData.forEach((p, index) => {
             const num = index + 1;
             const phraseDiv = document.createElement('div');
@@ -276,7 +252,7 @@
                 <span class="numero">${num}.</span>
                 <span class="texte-phrase">
                     ${parts[0]}
-                    <input type="text" id="input${num}" placeholder="verbe..." autocomplete="off">
+                    <input type="text" class="champ-reponse" id="input${num}" placeholder="verbe..." autocomplete="off">
                     <button class="check-btn" id="btn${num}" onclick="verifier(${index})">Vérifier</button>
                     <span class="feedback-span" id="feedback${num}"></span>
                     ${parts[1]}
@@ -285,11 +261,23 @@
             container.appendChild(phraseDiv);
 
             setTimeout(() => {
-                document.getElementById(`input${num}`).addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') verifier(index);
-                });
+                const inputEl = document.getElementById(`input${num}`);
+                if (inputEl) {
+                    inputEl.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') verifier(index);
+                    });
+                }
             }, 0);
         });
+
+        // Sauvegarde du prénom dans le navigateur
+        try {
+            const nomSauvegarde = localStorage.getItem("nomEleve");
+            if (nomSauvegarde) document.getElementById("nom-eleve-input").value = nomSauvegarde;
+            document.getElementById("nom-eleve-input").addEventListener("input", (e) => {
+                localStorage.setItem("nomEleve", e.target.value.trim());
+            });
+        } catch(e) {}
 
         function verifier(index) {
             const num = index + 1;
@@ -316,7 +304,7 @@
                 synchroniserFirebase(index, saisie, true);
 
                 if (score === phrasesData.length) {
-                    setTimeout(() => alert("🎉 Félicitations ! Tout est réussi !"), 300);
+                    setTimeout(() => alert("🎉 Félicitations ! Tout est validé !"), 200);
                 }
             } else {
                 // Faux
@@ -355,9 +343,47 @@
             if (timerOverlay) clearTimeout(timerOverlay);
             timerOverlay = setTimeout(() => overlay.classList.remove('show'), 1300);
         }
+    </script>
 
-        // --- 3. GESTION DE L'ESPACE PROFESSEUR INTÉGRÉ ---
-        let suiviActif = false;
+    <!-- 2. CHARGEMENT ET SYNCHRONISATION FIREBASE EN TÂCHE DE FOND -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        let db = null;
+        try {
+            if (typeof firebase !== 'undefined') {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyBF72uEilOlNUnRB4_BqREpXCj6NvF4Mac",
+                    authDomain: "exoanglais-6dd43.firebaseapp.com",
+                    projectId: "exoanglais-6dd43",
+                    storageBucket: "exoanglais-6dd43.firebasestorage.app",
+                    messagingSenderId: "656075154329",
+                    appId: "1:656075154329:web:cfe7ccb130ae55da02a908",
+                    measurementId: "G-BWY78NT061"
+                };
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+            }
+        } catch(e) {
+            console.warn("Firebase n'a pas pu s'initialiser :", e);
+        }
+
+        function synchroniserFirebase(numQuestion, reponseTapee, estCorrect) {
+            if (!db) return;
+            const nom = document.getElementById("nom-eleve-input").value.trim() || "Anonyme";
+            try {
+                db.collection("activites").add({
+                    eleve: nom,
+                    question: numQuestion + 1,
+                    reponse: reponseTapee,
+                    correct: estCorrect,
+                    totalErreurs: totalErreurs,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(err => console.log("Erreur envoi Firebase:", err));
+            } catch(e) {}
+        }
+
         function ouvrirEspaceProf() {
             const mdp = prompt("Code d'accès professeur :");
             if (mdp === "1234") {
@@ -365,9 +391,7 @@
                 section.style.display = "block";
                 section.scrollIntoView({ behavior: 'smooth' });
 
-                if (!suiviActif) {
-                    suiviActif = true;
-                    // Écoute Firestore en temps réel
+                if (db) {
                     db.collection("activites").orderBy("timestamp", "desc").limit(30).onSnapshot(snapshot => {
                         const tbody = document.getElementById("tableau-prof-corps");
                         tbody.innerHTML = "";
@@ -375,3 +399,26 @@
                             const data = doc.data();
                             const tr = document.createElement("tr");
                             tr.className = data.correct ? "correct-row" : "erreur-row";
+                            const heure = data.timestamp ? data.timestamp.toDate().toLocaleTimeString("fr-FR") : "--:--";
+
+                            tr.innerHTML = `
+                                <td>${heure}</td>
+                                <td><strong>${data.eleve}</strong></td>
+                                <td>Question n°${data.question}</td>
+                                <td><code>${data.reponse || "<em>vide</em>"}</code></td>
+                                <td>${data.correct ? '<span class="badge-ok">CORRECT</span>' : '<span class="badge-err">FAUTE (바보)</span>'}</td>
+                                <td>${data.totalErreurs}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }, err => {
+                        document.getElementById("tableau-prof-corps").innerHTML = `<tr><td colspan="6" style="color:red; text-align:center;">Vérifiez les Règles Firestore (mode test requis).</td></tr>`;
+                    });
+                }
+            } else if (mdp !== null) {
+                alert("Code incorrect.");
+            }
+        }
+    </script>
+</body>
+</html>
