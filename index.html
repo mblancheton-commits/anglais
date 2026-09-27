@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercice : Present Simple vs Present Continuous</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f7f6;
+            padding-bottom: 90px;
+        }
+        h1 { color: #2c3e50; text-align: center; }
+        
+        /* Barre de score en haut */
+        #stats-bar {
+            position: sticky;
+            top: 0;
+            background-color: rgba(255, 255, 255, 0.96);
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            z-index: 100;
+        }
+        .compteur-valeur { 
+            color: #c0392b; 
+            font-size: 1.5em; 
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+        .score-succes { color: #27ae60; font-size: 1.5em;}
+
+        .exercice-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .phrase {
+            margin-bottom: 20px;
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            min-height: 50px;
+        }
+        .numero { font-weight: bold; margin-right: 10px; min-width: 30px; color: #777; font-size: 1.1em;}
+        .texte-phrase { flex-grow: 1; margin-right: 10px; font-size: 1.1em;}
+        
+        input[type="text"] {
+            padding: 9px 12px;
+            border: 2px solid #aaa;
+            border-radius: 6px;
+            font-size: 1em;
+            width: 190px;
+            margin: 0 8px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        input[type="text"]:focus { 
+            outline: none; 
+            border-color: #3498db; 
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.4);
+        }
+
+        button.check-btn {
+            padding: 9px 18px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        button.check-btn:hover { background-color: #2980b9; transform: translateY(-1px); }
+        button.check-btn:active { background-color: #1c6391; transform: translateY(0); }
+        button.check-btn:disabled { background-color: #bdc3c7; cursor: not-allowed; opacity: 0.7; }
+
+        .feedback-span {
+            margin-left: 12px;
+            font-weight: bold;
+            min-width: 35px;
+            display: inline-block;
+        }
+        .correct-mark { color: #27ae60; font-size: 1.5em; }
+        .error-mark { color: #c0392b; font-size: 1.3em; }
+
+        input.input-error {
+            border-color: #e74c3c !important;
+            background-color: #fceae8 !important;
+            color: #c0392b;
+        }
+
+        /* OVERLAY PLEIN ÉCRAN POUR LES INSULTES */
+        #punition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(231, 76, 60, 0.96);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        #punition-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #punition-text {
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            color: #ffffff;
+            font-size: 17vw;
+            line-height: 1;
+            text-align: center;
+            text-shadow: 8px 8px 0px rgba(0,0,0,0.35);
+            animation: zoomTremblement 0.4s ease-out;
+            user-select: none;
+        }
+
+        #punition-sub {
+            color: #ffeaa7;
+            font-size: 2.2vw;
+            font-weight: bold;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+        }
+
+        /* NIVEAU MAXIMUM D'INTENSIFICATION */
+        #punition-overlay.rage-mode {
+            background-color: #962d22 !important;
+            animation: flashStrobe 0.15s infinite alternate;
+        }
+        #punition-overlay.rage-mode #punition-text {
+            font-size: 22vw !important;
+            color: #ffeaa7 !important;
+            text-shadow: 12px 12px 0px #000 !important;
+        }
+
+        @keyframes zoomTremblement {
+            0% { transform: scale(0.2) rotate(-15deg); }
+            50% { transform: scale(1.15) rotate(5deg); }
+            70% { transform: scale(0.95) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes flashStrobe {
+            0% { background-color: #c0392b; }
+            100% { background-color: #641e16; }
+        }
+
+        .aide {
+            background: #fff3cd; 
+            padding: 12px 16px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            border-left: 5px solid #ffc107; 
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Present Simple vs Present Continuous</h1>
+    
+    <div id="stats-bar">
+        <span>Score : <span id="score-succes" class="score-succes">0</span> / 10</span>
+        <span>Erreurs : <span id="compteur-erreurs" class="compteur-valeur">0</span></span>
+    </div>
+
+    <div class="aide">
+        <strong>Consigne :</strong> Complétez chaque phrase avec la forme correcte (ex: <em>work</em>, <em>is working</em>, <em>don't like</em>). Vous pouvez valider avec le bouton ou la touche <strong>Entrée</strong>.
+    </div>
+
+    <div class="exercice-container" id="ile-container"></div>
+
+    <!-- Overlay Plein Écran -->
+    <div id="punition-overlay">
+        <div id="punition-text">바보</div>
+        <div id="punition-sub">Niveau 1 : Ça commence mal...</div>
+    </div>
+
+    <script>
+        const phrasesData = [
+            {q: "Listen! The baby ___ (cry).", a: ["is crying"]},
+            {q: "We usually ___ (have) lunch at noon.", a: ["have"]},
+            {q: "Look at Tom! He ___ (ride) a horse.", a: ["is riding"]},
+            {q: "Water ___ (boil) at 100 degrees Celsius.", a: ["boils"]},
+            {q: "I ___ (not / like) horror movies.", a: ["don't like", "do not like"]},
+            {q: "They ___ (study) in the library at the moment.", a: ["are studying"]},
+            {q: "The sun ___ (shine) brightly today.", a: ["is shining"]},
+            {q: "My father ___ (work) in a factory.", a: ["works"]},
+            {q: "Be quiet! I ___ (try) to sleep.", a: ["am trying"]},
+            {q: "How often ___ (you / go) to the gym?", a: ["do you go"]}
+        ];
+
+        // Messages progressifs selon l'intensité
+        const insultesPaliers = [
+            { kr: "바보!", fr: "Idiot ! (Niveau 1)" },
+            { kr: "멍청이!", fr: "Nigaud ! Concentre-toi !" },
+            { kr: "답답해!", fr: "C'est exaspérant !" },
+            { kr: "똥개야!", fr: "Mais qu'est-ce que tu fais ?!" },
+            { kr: "정신 차려!", fr: "RÉVEILLE-TOI !" },
+            { kr: "장난해?!", fr: "Tu te moques de moi ?!" },
+            { kr: "죽을래?!", fr: "ARRÊTE LE MASSACRE !" }
+        ];
+
+        const container = document.getElementById('ile-container');
+        const compteurErreursSpan = document.getElementById('compteur-erreurs');
+        const scoreSuccesSpan = document.getElementById('score-succes');
+        const overlay = document.getElementById('punition-overlay');
+        const overlayText = document.getElementById('punition-text');
+        const overlaySub = document.getElementById('punition-sub');
+
+        let totalErreurs = 0;
+        let score = 0;
+        let timerOverlay = null;
+        let ligneResolue = new Array(phrasesData.length).fill(false);
+
+        // Construction du formulaire
+        phrasesData.forEach((p, index) => {
+            const num = index + 1;
+            const phraseDiv = document.createElement('div');
+            phraseDiv.className = 'phrase';
+            
+            const parts = p.q.split('___');
+            
+            phraseDiv.innerHTML = `
+                <span class="numero">${num}.</span>
+                <span class="texte-phrase">
+                    ${parts[0]}
+                    <input type="text" id="input${num}" placeholder="verbe..." autocomplete="off">
+                    <button class="check-btn" id="btn${num}" onclick="verifier(${index})">Vérifier</button>
+                    <span class="feedback-span" id="feedback${num}"></span>
+                    ${parts[1]}
+                </span>
+            `;
+            container.appendChild(phraseDiv);
+
+            // Permettre la validation par la touche "Entrée"
+            setTimeout(() => {
+                const champ = document.getElementById(`input${num}`);
+                champ.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') verifier(index);
+                });
+            }, 0);
+        });
+
+        function verifier(index) {
+            const num = index + 1;
+            const input = document.getElementById(`input${num}`);
+            const btn = document.getElementById(`btn${num}`);
+            const feedback = document.getElementById(`feedback${num}`);
+            
+            if (ligneResolue[index]) return;
+
+            const saisie = input.value.trim().toLowerCase();
+            const bonnesReponses = phrasesData[index].a.map(reponse => reponse.toLowerCase());
+
+            if (bonnesReponses.includes(saisie)) {
+                // --- CORRECT ---
+                input.classList.remove('input-error');
+                input.disabled = true;
+                btn.disabled = true;
+                feedback.innerHTML = '<span class="correct-mark">✓</span>';
+                
+                score++;
+                scoreSuccesSpan.textContent = score;
+                ligneResolue[index] = true;
+
+                if (score === phrasesData.length) {
+                    setTimeout(() => alert("🎉 Félicitations ! Tout est validé !"), 300);
+                }
+            } else {
+                // --- ERREUR ---
+                totalErreurs++;
+                compteurErreursSpan.textContent = totalErreurs;
+                
+                // Petit effet d'agrandissement sur le compteur
+                compteurErreursSpan.style.transform = "scale(1.4)";
+                setTimeout(() => compteurErreursSpan.style.transform = "scale(1)", 200);
+
+                input.classList.add('input-error');
+                feedback.innerHTML = '<span class="error-mark">✗</span>';
+
+                // DÉCLENCHEMENT SYSTÉMATIQUE DU PLEIN ÉCRAN
+                declencherInsultePleinEcran();
+
+                input.focus();
+                input.select();
+            }
+        }
+
+        function declencherInsultePleinEcran() {
+            // Choix du message selon le nombre total d'erreurs
+            let indexMessage = Math.min(totalErreurs - 1, insultesPaliers.length - 1);
+            if (indexMessage < 0) indexMessage = 0;
+
+            const donnees = insultesPaliers[indexMessage];
+            overlayText.textContent = donnees.kr;
+            overlaySub.textContent = `${donnees.fr} (Erreur n°${totalErreurs})`;
+
+            // Si plus de 5 erreurs, passage en mode rage (stroboscope et taille géante)
+            if (totalErreurs >= 5) {
+                overlay.classList.add('rage-mode');
+            } else {
+                overlay.classList.remove('rage-mode');
+            }
+
+            // Réinitialiser l'animation CSS à chaque affichage
+            overlayText.style.animation = 'none';
+            overlayText.offsetHeight; // force repaint
+            overlayText.style.animation = 'zoomTremblement 0.4s ease-out';
+
+            // Afficher
+            overlay.classList.add('show');
+
+            // Nettoyer un ancien timer si on clique vite
+            if (timerOverlay) clearTimeout(timerOverlay);
+
+            // Faire disparaître après 1,3 seconde (1300 ms)
+            timerOverlay = setTimeout(() => {
+                overlay.classList.remove('show');
+            }, 1300);
+        }
+    </script>
+</body>
+</html>
